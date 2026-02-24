@@ -72,10 +72,10 @@ impl Group {
     /// Fetches SGP4 elements from <https://celestrak.org>.
     async fn fetch_elements(&self) -> Option<Vec<sgp4::Elements>> {
         const URL: &str = "https://celestrak.org/NORAD/elements/gp.php";
-
         let mut request = HTTP_CLIENT.get(URL).query(&[("FORMAT", "json")]);
         request = match &self.identifier {
             Identifier::CosparId(id) => request.query(&[("INTDES", id)]),
+            Identifier::NoradId(id) => request.query(&[("CATNR", &id.to_string())]),
             Identifier::Group(group) => request.query(&[("GROUP", group)]),
         };
 
@@ -87,10 +87,22 @@ impl Group {
             }
         };
 
-        match response.json().await {
+        if !response.status().is_success() {
+            eprintln!(
+                "Celestrak returned HTTP {} for group '{}'",
+                response.status(),
+                self.label
+            );
+            return None;
+        }
+
+        match response.json::<Vec<sgp4::Elements>>().await {
             Ok(data) => Some(data),
             Err(e) => {
-                eprintln!("Failed to parse JSON from celestrak.org: {}", e);
+                eprintln!(
+                    "Failed to parse JSON from Celestrak for '{}': {}",
+                    self.label, e
+                );
                 None
             }
         }
@@ -103,27 +115,44 @@ impl PartialEq for Group {
     }
 }
 
-impl From<GroupConfig> for Group {
-    fn from(config: GroupConfig) -> Self {
-        match (config.id, config.group) {
-            (Some(id), None) => Self {
-                label: config.label,
-                identifier: Identifier::CosparId(id),
-            },
-            (None, Some(group)) => Self {
-                label: config.label,
-                identifier: Identifier::Group(group),
-            },
-            _ => panic!("invalid `satellite_groups.groups` configuration"),
+use anyhow::{anyhow, Error};
+
+impl TryFrom<GroupConfig> for Group {
+    type Error = Error;
+
+    fn try_from(config: GroupConfig) -> Result<Self, Self::Error> {
+        let count = config.id.is_some() as u8
+            + config.norad_id.is_some() as u8
+            + config.group.is_some() as u8;
+
+        if count != 1 {
+            return Err(anyhow!(
+                "Group '{}' must have exactly one of: id, norad-id, group",
+                config.label
+            ));
         }
+
+        let identifier = if let Some(id) = config.id {
+            Identifier::CosparId(id)
+        } else if let Some(norad) = config.norad_id {
+            Identifier::NoradId(norad)
+        } else if let Some(group) = config.group {
+            Identifier::Group(group)
+        } else {
+            unreachable!()
+        };
+
+        Ok(Self {
+            label: config.label,
+            identifier,
+        })
     }
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 enum Identifier {
-    /// COSPAR ID.
     CosparId(String),
-    /// Group name.
+    NoradId(u64),
     Group(String),
 }
 
@@ -131,6 +160,7 @@ impl Display for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Identifier::CosparId(id) => write!(f, "{id}"),
+            Identifier::NoradId(id) => write!(f, "{id}"),
             Identifier::Group(group) => write!(f, "{group}"),
         }
     }

@@ -13,6 +13,8 @@ use ratatui::{
     style::Styled,
     widgets::{Block, List, ListItem, ListState, Scrollbar, ScrollbarState},
 };
+use std::convert::TryFrom;
+
 
 /// A widget that displays a list of satellite groups.
 pub struct SatelliteGroups<'a> {
@@ -40,18 +42,21 @@ pub struct SatelliteGroupsState {
 }
 
 impl SatelliteGroupsState {
-    /// Creates a new `SatelliteGroupsState` with the given configuration.
-    pub fn with_config(config: SatelliteGroupsConfig) -> Self {
-        Self {
-            list_entries: config
-                .groups
-                .into_iter()
-                .map(Group::from)
-                .map(Entry::from)
-                .collect(),
-            cache_lifetime: Duration::from_mins(config.cache_lifetime_mins),
+    /// Creates a new `SatelliteGroupsState` with the given configuration.    
+    pub fn with_config(config: SatelliteGroupsConfig) -> Result<Self> {
+        let groups: Vec<Group> = config
+            .groups
+            .into_iter()
+            .map(Group::try_from)
+            .collect::<Result<_, _>>()?;
+
+        let list_entries = groups.into_iter().map(Entry::from).collect();
+    
+        Ok(Self {
+            list_entries,
+            cache_lifetime: Duration::from_secs(config.cache_lifetime_mins * 60),
             ..Self::default()
-        }
+        })
     }
 
     /// Spawns async task to load orbital elements for a single entry.

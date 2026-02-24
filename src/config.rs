@@ -57,6 +57,9 @@ pub struct SatelliteGroupsConfig {
 pub struct GroupConfig {
     pub label: String,
     pub id: Option<String>,
+    /// NORAD Catalog ID (e.g., 25544 for ISS).
+    /// Mutually exclusive with `id` and `group`.
+    pub norad_id: Option<u64>,
     pub group: Option<String>,
 }
 
@@ -65,6 +68,7 @@ impl GroupConfig {
         Self {
             label,
             id: Some(cospar_id),
+            norad_id: None,
             group: None,
         }
     }
@@ -73,6 +77,7 @@ impl GroupConfig {
         Self {
             label,
             id: None,
+            norad_id: None,
             group: Some(group_name),
         }
     }

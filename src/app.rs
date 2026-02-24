@@ -34,9 +34,10 @@ impl App {
         let terminal = Terminal::new(backend)?;
         let events = EventHandler::new();
         let tui = Tui::new(terminal, events);
+
         Ok(Self {
             running: true,
-            states: States::with_config(config),
+            states: States::with_config(config)?,
             tui,
         })
     }
@@ -161,16 +162,16 @@ pub struct States {
 }
 
 impl States {
-    pub fn with_config(config: Config) -> Self {
-        Self {
+    pub fn with_config(config: Config) -> Result<Self> {
+        Ok(Self {
             shared: SharedState::with_config(config.clone()),
             world_map_state: WorldMapState::with_config(config.world_map),
-            satellite_groups_state: SatelliteGroupsState::with_config(config.satellite_groups),
+            satellite_groups_state: SatelliteGroupsState::with_config(config.satellite_groups)?,
             tab_state: Default::default(),
             information_state: Default::default(),
             sky_state: SkyState::with_config(config.sky),
             timeline_state: TimelineState::with_config(config.timeline),
             show_keymap: false,
-        }
+        })
     }
 }
