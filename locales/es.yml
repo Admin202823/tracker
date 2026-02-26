@@ -46,3 +46,7 @@ keymap.follow: "Alternar seguimiento de objeto"
 keymap.terminator: "Alternar terminador día-noche"
 keymap.adjust_time: "Retroceder/avanzar tiempo"
 keymap.reset_time: "Restablecer desfase de tiempo"
+keymap.predict: "Alternar popup de pasos predichos"
+
+# Predicted passes
+predicted_passes.no_passes: "No hay pasos en las próximas 24 horas"

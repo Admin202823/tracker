@@ -46,3 +46,7 @@ keymap.follow: "切换目标跟随"
 keymap.terminator: "切换昼夜分界线"
 keymap.adjust_time: "时间后退/前进"
 keymap.reset_time: "重置时间偏移"
+keymap.predict: "切换预测过境弹窗"
+
+# Predicted passes
+predicted_passes.no_passes: "未来24小时内没有过境"

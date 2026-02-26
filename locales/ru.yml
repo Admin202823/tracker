@@ -46,3 +46,7 @@ keymap.follow: "Переключить отслеживание объекта"
 keymap.terminator: "Переключить терминатор день-ночь"
 keymap.adjust_time: "Время назад/вперёд"
 keymap.reset_time: "Сбросить смещение времени"
+keymap.predict: "Переключить окно предсказанных прохождений"
+
+# Predicted passes
+predicted_passes.no_passes: "В следующие 24 часа прохождений не найдено"

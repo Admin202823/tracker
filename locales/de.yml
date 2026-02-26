@@ -46,3 +46,7 @@ keymap.follow: "Objektverfolgung umschalten"
 keymap.terminator: "Tag-Nacht-Grenze umschalten"
 keymap.adjust_time: "Zeit zurück/vor"
 keymap.reset_time: "Zeitversatz zurücksetzen"
+keymap.predict: "Popup für vorhergesagte Durchgänge umschalten"
+
+# Predicted passes
+predicted_passes.no_passes: "Keine Durchgänge in den nächsten 24 Stunden gefunden"

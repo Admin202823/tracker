@@ -46,3 +46,7 @@ keymap.follow: "Basculer le suivi d'objet"
 keymap.terminator: "Basculer le terminateur jour-nuit"
 keymap.adjust_time: "Reculer/avancer le temps"
 keymap.reset_time: "Réinitialiser le décalage horaire"
+keymap.predict: "Basculer le popup des passages prédits"
+
+# Predicted passes
+predicted_passes.no_passes: "Aucun passage trouvé dans les 24 prochaines heures"

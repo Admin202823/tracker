@@ -1,4 +1,5 @@
 use chrono::{DateTime, Duration, Utc};
+use std::cell::RefCell;
 
 use crate::{config::Config, coordinates::Lla, object::Object};
 
@@ -15,6 +16,9 @@ pub struct SharedState {
     pub time: TimeState,
     /// Configured ground station.
     pub ground_station: Option<Station>,
+    /// Cached predicted passes for the selected satellite (interior mutable).
+    /// Format: (satellite_name, list of (AOS, LOS, max_elevation) tuples)
+    cached_passes: RefCell<Option<(String, Vec<(DateTime<Utc>, DateTime<Utc>, f64)>)>>,
 }
 
 impl SharedState {
@@ -29,6 +33,29 @@ impl SharedState {
         Self {
             ground_station,
             ..Self::default()
+        }
+    }
+
+    /// Gets cached passes for the selected satellite, if available.
+    pub fn get_cached_passes(&self) -> Option<Vec<(DateTime<Utc>, DateTime<Utc>, f64)>> {
+        let cache = self.cached_passes.borrow();
+        if let Some((name, passes)) = cache.as_ref() {
+            // Only return cached passes if the selected object still has the same name
+            if let Some(obj) = &self.selected_object {
+                if obj.name() == Some(name.as_str()) {
+                    return Some(passes.clone());
+                }
+            }
+        }
+        None
+    }
+
+    /// Sets cached passes for the selected satellite.
+    pub fn set_cached_passes(&self, passes: Vec<(DateTime<Utc>, DateTime<Utc>, f64)>) {
+        if let Some(obj) = &self.selected_object {
+            if let Some(name) = obj.name() {
+                *self.cached_passes.borrow_mut() = Some((name.to_string(), passes));
+            }
         }
     }
 }

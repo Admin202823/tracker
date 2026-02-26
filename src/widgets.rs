@@ -2,6 +2,7 @@ use ratatui::prelude::*;
 
 pub mod information;
 pub mod keymap;
+pub mod predicted_passes;
 pub mod satellite_groups;
 pub mod sky;
 pub mod tabs;

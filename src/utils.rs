@@ -167,16 +167,18 @@ pub fn calculate_sky_track(
 }
 
 /// Calculates satellite pass time segments within a given time window.
+/// Returns tuples of (AOS, LOS, max_elevation) where max_elevation is in degrees.
 pub fn calculate_pass_times(
     object: &Object,
     observer: &Lla,
     start_time: &DateTime<Utc>,
     end_time: &DateTime<Utc>,
-) -> Vec<(DateTime<Utc>, DateTime<Utc>)> {
+) -> Vec<(DateTime<Utc>, DateTime<Utc>, f64)> {
     debug_assert!(start_time <= end_time);
 
-    const TIME_STEP: Duration = Duration::minutes(1);
-
+    // First pass: coarse scan to find transitions (30 seconds resolution)
+    const COARSE_TIME_STEP: Duration = Duration::seconds(30);
+    
     let mut pass_segments = Vec::new();
     let mut current_pass_start: Option<DateTime<Utc>> = None;
 
@@ -188,25 +190,96 @@ pub fn calculate_pass_times(
 
         match (current_pass_start, is_visible) {
             (None, true) => {
-                // Start of a new pass
-                current_pass_start = Some(time);
+                // Potential start of a new pass - refine with interpolation
+                let refined_start = refine_transition_time(object, observer, time - COARSE_TIME_STEP, time, false);
+                current_pass_start = Some(refined_start);
             }
             (Some(start), false) => {
-                // End of current pass
-                pass_segments.push((start, time - TIME_STEP));
+                // Potential end of current pass - refine with interpolation
+                let refined_end = refine_transition_time(object, observer, time - COARSE_TIME_STEP, time, true);
+                let max_el = calculate_max_elevation(object, observer, &start, &refined_end);
+                pass_segments.push((start, refined_end, max_el));
                 current_pass_start = None;
             }
             _ => {}
         }
 
-        time += TIME_STEP;
+        time += COARSE_TIME_STEP;
     }
 
     if let Some(start) = current_pass_start {
-        pass_segments.push((start, *end_time));
+        let max_el = calculate_max_elevation(object, observer, &start, end_time);
+        pass_segments.push((start, *end_time, max_el));
     }
 
     pass_segments
+}
+
+/// Calculates the maximum elevation during a satellite pass.
+fn calculate_max_elevation(
+    object: &Object,
+    observer: &Lla,
+    start: &DateTime<Utc>,
+    end: &DateTime<Utc>,
+) -> f64 {
+    const TIME_STEP: Duration = Duration::seconds(10);
+    let mut max_elevation = 0.0;
+    let mut time = *start;
+    
+    while time <= *end {
+        let state = object.predict(&time).unwrap();
+        let (_, el) = state.position.az_el(observer);
+        if el > max_elevation {
+            max_elevation = el;
+        }
+        time += TIME_STEP;
+    }
+    
+    max_elevation
+}
+
+/// Refines a transition time (AOS or LOS) using linear interpolation.
+/// If looking_for_end is true, finds the LOS (el going below 0).
+/// If looking_for_end is false, finds the AOS (el going above 0).
+fn refine_transition_time(
+    object: &Object,
+    observer: &Lla,
+    before_time: DateTime<Utc>,
+    after_time: DateTime<Utc>,
+    looking_for_end: bool,
+) -> DateTime<Utc> {
+    let mut low = before_time;
+    let mut high = after_time;
+    
+    // Binary search for the exact transition point (precision: 5 seconds)
+    const PRECISION: i64 = 5; // seconds
+    
+    while (high - low).num_seconds() > PRECISION {
+        let mid = low + (high - low) / 2;
+        let state = object.predict(&mid).unwrap();
+        let (_, el) = state.position.az_el(observer);
+        let is_visible = el >= 0.0;
+        
+        if looking_for_end {
+            // Looking for LOS: el goes from visible to invisible
+            if is_visible {
+                low = mid;
+            } else {
+                high = mid;
+            }
+        } else {
+            // Looking for AOS: el goes from invisible to visible
+            if is_visible {
+                high = mid;
+            } else {
+                low = mid;
+            }
+        }
+    }
+    
+    // Return the moment closest to the horizon (0 degrees elevation)
+    // For LOS, return high (first invisible time); for AOS, return high (first visible time)
+    high
 }
 
 /// Converts azimuth and elevation to canvas coordinates.

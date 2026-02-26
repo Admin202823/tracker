@@ -46,3 +46,7 @@ keymap.follow: "Toggle object tracking (follow)"
 keymap.terminator: "Toggle day-night terminator"
 keymap.adjust_time: "Adjust time backward/forward"
 keymap.reset_time: "Reset time offset"
+keymap.predict: "Toggle predicted passes popup"
+
+# Predicted passes
+predicted_passes.no_passes: "No passes found in the next 24 hours"

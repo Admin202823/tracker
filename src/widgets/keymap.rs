@@ -9,6 +9,7 @@ use unicode_width::UnicodeWidthStr;
 const GLOBAL_BINDINGS: &[(&str, &str)] = &[
     ("q, <C-c>", "keymap.quit"),
     ("?", "keymap.help"),
+    ("p", "keymap.predict"),
     ("<Esc>", "keymap.dismiss"),
     ("<Tab> / <S-Tab>", "keymap.switch_tab"),
 ];

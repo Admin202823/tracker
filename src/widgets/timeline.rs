@@ -156,7 +156,7 @@ impl Timeline<'_> {
             &(current_time + Duration::hours(Self::HOURS_WINDOW) / 2),
         );
 
-        for (start_time, end_time) in pass_segments {
+        for (start_time, end_time, _) in pass_segments {
             let x1 = time_to_canvas_x(start_time, current_time).max(0.0);
             let x2 = time_to_canvas_x(end_time, current_time).min(Self::HOURS_WINDOW as f64);
 

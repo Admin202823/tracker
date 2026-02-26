@@ -10,6 +10,7 @@ use crate::{
     widgets::{
         information::{self, InformationState},
         keymap::Keymap,
+        predicted_passes::PredictedPasses,
         satellite_groups::{self, SatelliteGroups, SatelliteGroupsState},
         sky::{self, SkyState},
         tabs::{self, Tabs, TabsState},
@@ -100,6 +101,13 @@ impl App {
             if self.states.show_keymap {
                 Keymap.render(frame.area(), frame.buffer_mut());
             }
+
+            if self.states.show_predicted_passes {
+                PredictedPasses {
+                    shared: &self.states.shared,
+                }
+                .render(frame.area(), frame.buffer_mut());
+            }
         })?;
         Ok(())
     }
@@ -111,8 +119,8 @@ impl App {
             _ => {}
         }
 
-        // Block input events when keymap is shown
-        if self.states.show_keymap {
+        // Block input events when keymap or predicted passes popup is shown
+        if self.states.show_keymap || self.states.show_predicted_passes {
             match event {
                 Event::Key(_) | Event::Mouse(_) => return Ok(()),
                 _ => {}
@@ -141,9 +149,14 @@ impl App {
             KeyCode::Char('?') => {
                 self.states.show_keymap = !self.states.show_keymap;
             }
-            // Close keymap popup on `Esc`.
+            // Toggle predicted passes popup.
+            KeyCode::Char('p') => {
+                self.states.show_predicted_passes = !self.states.show_predicted_passes;
+            }
+            // Close popups on `Esc`.
             KeyCode::Esc => {
                 self.states.show_keymap = false;
+                self.states.show_predicted_passes = false;
             }
             _ => {}
         }
@@ -159,6 +172,7 @@ pub struct States {
     pub sky_state: SkyState,
     pub timeline_state: TimelineState,
     pub show_keymap: bool,
+    pub show_predicted_passes: bool,
 }
 
 impl States {
@@ -172,6 +186,7 @@ impl States {
             sky_state: SkyState::with_config(config.sky),
             timeline_state: TimelineState::with_config(config.timeline),
             show_keymap: false,
+            show_predicted_passes: false,
         })
     }
 }
