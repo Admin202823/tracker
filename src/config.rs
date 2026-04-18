@@ -35,7 +35,7 @@ impl Default for WorldMapConfig {
             follow_object: true,
             follow_smoothing: 0.3,
             show_terminator: true,
-            show_visibility_area: true,
+            show_visibility_area: false, // Disabled by default for better debug performance
             lon_delta_deg: 10.0,
             map_color: Color::Gray,
             trajectory_color: Color::LightBlue,

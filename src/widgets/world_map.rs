@@ -306,6 +306,9 @@ fn handle_key_event(event: KeyEvent, states: &mut States) -> Result<()> {
         KeyCode::Char('t') => {
             states.world_map_state.show_terminator = !states.world_map_state.show_terminator;
         }
+        KeyCode::Char('d') => {
+            states.shared.selected_object = None;
+        }
         _ => {}
     }
 
@@ -326,19 +329,15 @@ fn handle_mouse_event(event: MouseEvent, states: &mut States) -> Result<()> {
             states.shared.selected_object =
                 nearest_object_index.map(|index| states.shared.objects[index].clone());
         }
-        MouseEventKind::Down(MouseButton::Right) => {
-            states.shared.selected_object = None;
-        }
         MouseEventKind::ScrollUp => {
             states.world_map_state.scroll_map_left();
         }
         MouseEventKind::ScrollDown => {
             states.world_map_state.scroll_map_right();
         }
-        _ => {}
+        // Ignore all other mouse events (middle-click, right-click, move, drag, etc.)
+        _ => return Ok(()),
     }
-    states.shared.hovered_object =
-        nearest_object_index.map(|index| states.shared.objects[index].clone());
 
     Ok(())
 }

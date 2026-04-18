@@ -16,7 +16,7 @@
 | Key                                     | Action                          |
 |-----------------------------------------|---------------------------------|
 | `<LeftMouse>`                           | Select the nearest object       |
-| `<RightMouse>`                          | Deselect current object         |
+| `d`                                     | Deselect current object         |
 | `<ScrollWheelUp>` / `<ScrollWheelDown>` | Move the world map left/right   |
 | `[` / `]`                               | Move the world map left/right   |
 | `f`                                     | Toggle object tracking (follow) |

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{DateTime, Duration, Local, TimeZone, Timelike, Utc};
+use chrono::{DateTime, Duration, Local, TimeZone, Timelike};
 use crossterm::event::{KeyCode, KeyEvent, MouseButton, MouseEvent, MouseEventKind};
 use ratatui::{
     prelude::*,
@@ -39,14 +39,6 @@ impl TimelineState {
             ..Default::default()
         }
     }
-
-    fn hovered_time(&self, current_time: DateTime<Utc>) -> Option<DateTime<Utc>> {
-        let mouse = self.mouse_position?;
-        Some(canvas_x_to_time(
-            area_to_canvas_x(self.inner_area, mouse),
-            current_time,
-        ))
-    }
 }
 
 impl Widget for Timeline<'_> {
@@ -64,11 +56,12 @@ impl Timeline<'_> {
 
     fn block(&self) -> Block<'static> {
         let current_time = self.shared.time.time();
-        let mut block = Block::new()
+        let block = Block::new()
             .borders(Borders::LEFT | Borders::RIGHT | Borders::BOTTOM)
             .title_bottom(
                 format!(
-                    "{} ({:+}m)",
+                    "UTC: {} | Local: {} ({:+}m)",
+                    current_time.format("%Y-%m-%d %H:%M:%S"),
                     current_time
                         .with_timezone(&Local)
                         .format("%Y-%m-%d %H:%M:%S"),
@@ -76,14 +69,6 @@ impl Timeline<'_> {
                 )
                 .white(),
             );
-
-        if let Some(time) = self.state.hovered_time(current_time) {
-            let label = time
-                .with_timezone(&Local)
-                .format("%Y-%m-%d %H:%M:%S")
-                .to_string();
-            block = block.title_bottom(Line::from(label).right_aligned());
-        }
 
         block
     }
