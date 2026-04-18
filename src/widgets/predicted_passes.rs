@@ -72,91 +72,59 @@ impl Widget for PredictedPasses<'_> {
             calculated
         };
 
-        // Filter passes based on minimum elevation
-        let (visible_passes, hidden_passes): (Vec<_>, Vec<_>) = all_pass_segments
-            .into_iter()
-            .partition(|(_, _, max_el)| *max_el >= self.state.config.min_elevation_deg);
-
-        // Build the content lines
+        // Build the content lines in chronological order.
         let mut lines = Vec::new();
-        
-        let total_passes = visible_passes.len() + if self.state.show_hidden { hidden_passes.len() } else { 0 };
-        if total_passes == 0 {
-            lines.push(Line::raw(t!("predicted_passes.no_passes").to_string()));
-        } else {
-            // Add visible passes
-            for (aos, los, max_el) in visible_passes {
-                let aos_local = aos.with_timezone(&Local);
-                let los_local = los.with_timezone(&Local);
-                
-                let date_str = aos_local.format("%Y-%m-%d").to_string();
-                let aos_str = aos_local.format("%H:%M:%S").to_string();
-                let los_str = los_local.format("%H:%M:%S").to_string();
-                let duration = los - aos;
-                let duration_str = format!("{}m", duration.num_minutes());
-                let max_el_str = format!("{:.1}°", max_el);
-                
-                lines.push(Line::from(vec![
-                    Span::styled(
-                        format!("{} AOS: {}", date_str, aos_str),
-                        Style::default().fg(Color::Green),
-                    ),
-                    Span::raw(" - "),
-                    Span::styled(
-                        format!("LOS: {}", los_str),
-                        Style::default().fg(Color::Red),
-                    ),
-                    Span::raw(" ("),
-                    Span::styled(
-                        duration_str,
-                        Style::default().fg(Color::Cyan),
-                    ),
-                    Span::raw(", Max: "),
-                    Span::styled(
-                        max_el_str,
-                        Style::default().fg(Color::Yellow),
-                    ),
-                    Span::raw(")"),
-                ]));
+        let mut shown_any = false;
+        let min_el = self.state.config.min_elevation_deg;
+
+        for (aos, los, max_el) in all_pass_segments {
+            let hidden = max_el < min_el;
+            if hidden && !self.state.show_hidden {
+                continue;
             }
 
-            // Add hidden passes if toggle is on
-            if self.state.show_hidden {
-                for (aos, los, max_el) in hidden_passes {
-                    let aos_local = aos.with_timezone(&Local);
-                    let los_local = los.with_timezone(&Local);
-                    
-                    let date_str = aos_local.format("%Y-%m-%d").to_string();
-                    let aos_str = aos_local.format("%H:%M:%S").to_string();
-                    let los_str = los_local.format("%H:%M:%S").to_string();
-                    let duration = los - aos;
-                    let duration_str = format!("{}m", duration.num_minutes());
-                    let max_el_str = format!("{:.1}°", max_el);
-                    
-                    lines.push(Line::from(vec![
-                        Span::styled(
-                            format!("{} AOS: {}", date_str, aos_str),
-                            Style::default().fg(Color::Gray),
-                        ),
-                        Span::raw(" - "),
-                        Span::styled(
-                            format!("LOS: {}", los_str),
-                            Style::default().fg(Color::DarkGray),
-                        ),
-                        Span::raw(" ("),
-                        Span::styled(
-                            duration_str,
-                            Style::default().fg(Color::Gray),
-                        ),
-                        Span::raw(", Max: "),
-                        Span::styled(
-                            max_el_str,
-                            Style::default().fg(Color::Gray),
-                        ),
-                        Span::raw(")"),
-                    ]));
-                }
-            }
+            shown_any = true;
+            let aos_local = aos.with_timezone(&Local);
+            let los_local = los.with_timezone(&Local);
+            let date_str = aos_local.format("%Y-%m-%d").to_string();
+            let aos_str = aos_local.format("%H:%M:%S").to_string();
+            let los_str = los_local.format("%H:%M:%S").to_string();
+            let duration = los - aos;
+            let duration_str = format!("{}m", duration.num_minutes());
+            let max_el_str = format!("{:.1}°", max_el);
+
+            let (aos_color, los_color, meta_color) = if hidden {
+                (Color::Gray, Color::DarkGray, Color::Gray)
+            } else {
+                (Color::Green, Color::Red, Color::Yellow)
+            };
+
+            lines.push(Line::from(vec![
+                Span::styled(
+                    format!("{} AOS: {}", date_str, aos_str),
+                    Style::default().fg(aos_color),
+                ),
+                Span::raw(" - "),
+                Span::styled(
+                    format!("LOS: {}", los_str),
+                    Style::default().fg(los_color),
+                ),
+                Span::raw(" ("),
+                Span::styled(
+                    duration_str,
+                    Style::default().fg(Color::Cyan),
+                ),
+                Span::raw(", Max: "),
+                Span::styled(
+                    max_el_str,
+                    Style::default().fg(meta_color),
+                ),
+                Span::raw(")"),
+            ]));
+        }
+
+        if !shown_any {
+            lines.push(Line::raw(t!("predicted_passes.no_passes").to_string()));
         }
 
         let content = format!(

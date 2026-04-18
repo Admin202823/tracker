@@ -134,7 +134,11 @@ impl App {
         information::handle_event(event, &mut self.states)?;
         sky::handle_event(event, &mut self.states)?;
         timeline::handle_event(event, &mut self.states)?;
-        predicted_passes::handle_event(event, &mut self.states)?;
+
+        if self.states.show_predicted_passes {
+            predicted_passes::handle_event(event, &mut self.states)?;
+        }
+
         Ok(())
     }
 
