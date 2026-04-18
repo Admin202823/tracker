@@ -17,6 +17,8 @@ A terminal-based real-time satellite tracking and orbit prediction application.
 - **Infinite map**: Continuous horizontal world map.
 - **Auto updates**: Automatic TLE updates.
 - **Configurable**: Custom display & behavior.
+- **NORAD ID support**: select satellites by catalog number.
+- **Predicted passes**: pass popup with date display and minimum elevation filtering.
 - **Localization**: UI translations.
 
 ## Installation

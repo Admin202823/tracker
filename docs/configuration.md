@@ -28,6 +28,7 @@ groups = [
     { label = "ISS", id = "1998-067A" },
     { label = "CSS", id = "2021-035A" },
     # Weather & Earth Resources Satellites
+    { label = "Meteor M2-4", norad_id = 59051},
     { label = "Weather", group = "weather" },
     { label = "NOAA", group = "noaa" },
     { label = "GOES", group = "goes" },
@@ -55,7 +56,14 @@ groups = [
 
 [timeline]
 time_delta_mins = 1
+
+[predicted_passes]
+min_elevation_deg = 30.0
 ```
+
+## Predicted Passes
+
+- `min_elevation_deg`: Minimum peak elevation in degrees for passes shown by default in the predicted passes popup. Passes below this threshold are hidden unless the user presses `h` while the popup is open.
 
 ## World Map
 
@@ -70,6 +78,7 @@ time_delta_mins = 1
 Satellite TLE (Two-Line Element) data is retrieved from [CelesTrak](https://celestrak.org), a 501(c)(3) non-profit organization dedicated to providing free orbital data and resources to the space community.
 
 - **Individual satellites**: Use the [Search Satellite Catalog](https://celestrak.org/satcat/search.php) to locate specific satellites. The `id` field should match the satellite's International Designator as listed in the catalog.
+- **NORAD catalog IDs**: The `norad_id` field is also supported for direct selection by NORAD number.
 - **Function-based groups**: Complete list of available satellite categories can be found at [Current GP Element Sets](https://celestrak.org/NORAD/elements/). The `group` field in the configuration corresponds to these category identifiers.
 
 ## Sky

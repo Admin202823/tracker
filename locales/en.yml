@@ -47,6 +47,7 @@ keymap.terminator: "Toggle day-night terminator"
 keymap.adjust_time: "Adjust time backward/forward"
 keymap.reset_time: "Reset time offset"
 keymap.predict: "Toggle predicted passes popup"
+keymap.toggle_hidden_passes: "Toggle hidden passes display"
 
 # Predicted passes
 predicted_passes.no_passes: "No passes found in the next 24 hours"

@@ -10,7 +10,7 @@ use crate::{
     widgets::{
         information::{self, InformationState},
         keymap::Keymap,
-        predicted_passes::PredictedPasses,
+        predicted_passes::{self, PredictedPasses, PredictedPassesState},
         satellite_groups::{self, SatelliteGroups, SatelliteGroupsState},
         sky::{self, SkyState},
         tabs::{self, Tabs, TabsState},
@@ -105,6 +105,7 @@ impl App {
             if self.states.show_predicted_passes {
                 PredictedPasses {
                     shared: &self.states.shared,
+                    state: &self.states.predicted_passes_state,
                 }
                 .render(frame.area(), frame.buffer_mut());
             }
@@ -114,13 +115,13 @@ impl App {
 
     async fn handle_event(&mut self, event: Event) -> Result<()> {
         match event {
-            Event::Render => self.render()?,
+            Event::Render => self.render(),
             Event::Key(event) => self.handle_key_events(event),
-            _ => {}
-        }
+            _ => Ok(()),
+        }?;
 
         // Block input events when keymap or predicted passes popup is shown
-        if self.states.show_keymap || self.states.show_predicted_passes {
+        if self.states.show_keymap || (self.states.show_predicted_passes && !matches!(event, Event::Key(KeyEvent { code: KeyCode::Char('h'), .. }) | Event::Key(KeyEvent { code: KeyCode::Esc, .. }))) {
             match event {
                 Event::Key(_) | Event::Mouse(_) => return Ok(()),
                 _ => {}
@@ -132,10 +133,12 @@ impl App {
         tabs::handle_event(event, &mut self.states)?;
         information::handle_event(event, &mut self.states)?;
         sky::handle_event(event, &mut self.states)?;
-        timeline::handle_event(event, &mut self.states)
+        timeline::handle_event(event, &mut self.states)?;
+        predicted_passes::handle_event(event, &mut self.states)?;
+        Ok(())
     }
 
-    fn handle_key_events(&mut self, event: KeyEvent) {
+    fn handle_key_events(&mut self, event: KeyEvent) -> Result<()> {
         match event.code {
             // Exit application on `Q`.
             KeyCode::Char('q') => {
@@ -151,7 +154,9 @@ impl App {
             }
             // Toggle predicted passes popup.
             KeyCode::Char('p') => {
-                self.states.show_predicted_passes = !self.states.show_predicted_passes;
+                if self.states.shared.selected_object.is_some() {
+                    self.states.show_predicted_passes = !self.states.show_predicted_passes;
+                }
             }
             // Close popups on `Esc`.
             KeyCode::Esc => {
@@ -160,6 +165,7 @@ impl App {
             }
             _ => {}
         }
+        Ok(())
     }
 }
 
@@ -171,6 +177,7 @@ pub struct States {
     pub information_state: InformationState,
     pub sky_state: SkyState,
     pub timeline_state: TimelineState,
+    pub predicted_passes_state: PredictedPassesState,
     pub show_keymap: bool,
     pub show_predicted_passes: bool,
 }
@@ -185,6 +192,7 @@ impl States {
             information_state: Default::default(),
             sky_state: SkyState::with_config(config.sky),
             timeline_state: TimelineState::with_config(config.timeline),
+            predicted_passes_state: PredictedPassesState::with_config(config.predicted_passes),
             show_keymap: false,
             show_predicted_passes: false,
         })

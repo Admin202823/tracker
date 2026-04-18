@@ -10,6 +10,7 @@ const GLOBAL_BINDINGS: &[(&str, &str)] = &[
     ("q, <C-c>", "keymap.quit"),
     ("?", "keymap.help"),
     ("p", "keymap.predict"),
+    ("h (in predicted passes popup)", "keymap.toggle_hidden_passes"),
     ("<Esc>", "keymap.dismiss"),
     ("<Tab> / <S-Tab>", "keymap.switch_tab"),
 ];

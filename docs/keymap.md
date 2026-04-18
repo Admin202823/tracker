@@ -6,6 +6,8 @@
 |---------------------|-----------------------------|
 | `q`, `<C-c>`        | Quit                        |
 | `?`                 | Toggle keymap popup         |
+| `p`                 | Toggle predicted passes popup |
+| `h`                 | Toggle hidden predicted passes in popup |
 | `<Esc>`             | Dismiss popup               |
 | `<Tab>` / `<S-Tab>` | Switch to next/previous tab |
 

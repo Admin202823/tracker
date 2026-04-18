@@ -11,6 +11,7 @@ pub struct Config {
     pub satellite_groups: SatelliteGroupsConfig,
     pub sky: SkyConfig,
     pub timeline: TimelineConfig,
+    pub predicted_passes: PredictedPassesConfig,
 }
 
 /// Configuration for the world map widget.
@@ -136,5 +137,18 @@ pub struct TimelineConfig {
 impl Default for TimelineConfig {
     fn default() -> Self {
         Self { time_delta_mins: 1 }
+    }
+}
+
+/// Configuration for the predicted passes widget.
+#[derive(Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct PredictedPassesConfig {
+    pub min_elevation_deg: f64,
+}
+
+impl Default for PredictedPassesConfig {
+    fn default() -> Self {
+        Self { min_elevation_deg: 30.0 }
     }
 }

@@ -1,15 +1,43 @@
 use chrono::{Duration, Local};
+use crossterm::event::KeyCode;
 use ratatui::{
     prelude::*,
     widgets::{Block, Clear, Paragraph},
 };
 use rust_i18n::t;
+use anyhow::Result;
 
-use crate::{shared_state::SharedState, utils::calculate_pass_times};
+use crate::{config::PredictedPassesConfig, event::Event, shared_state::SharedState, utils::calculate_pass_times};
+
+/// State for the predicted passes widget.
+#[derive(Clone)]
+pub struct PredictedPassesState {
+    pub config: PredictedPassesConfig,
+    pub show_hidden: bool,
+}
+
+impl Default for PredictedPassesState {
+    fn default() -> Self {
+        Self {
+            config: PredictedPassesConfig::default(),
+            show_hidden: false,
+        }
+    }
+}
+
+impl PredictedPassesState {
+    pub fn with_config(config: PredictedPassesConfig) -> Self {
+        Self {
+            config,
+            show_hidden: false,
+        }
+    }
+}
 
 /// A widget that displays predicted passes for a selected satellite.
 pub struct PredictedPasses<'a> {
     pub shared: &'a SharedState,
+    pub state: &'a PredictedPassesState,
 }
 
 impl Widget for PredictedPasses<'_> {
@@ -22,7 +50,7 @@ impl Widget for PredictedPasses<'_> {
         };
 
         // Try to get cached passes first
-        let pass_segments = if let Some(cached) = self.shared.get_cached_passes() {
+        let all_pass_segments = if let Some(cached) = self.shared.get_cached_passes() {
             cached
         } else {
             // Get current simulation time (which accounts for user's timeline offset)
@@ -44,16 +72,24 @@ impl Widget for PredictedPasses<'_> {
             calculated
         };
 
+        // Filter passes based on minimum elevation
+        let (visible_passes, hidden_passes): (Vec<_>, Vec<_>) = all_pass_segments
+            .into_iter()
+            .partition(|(_, _, max_el)| *max_el >= self.state.config.min_elevation_deg);
+
         // Build the content lines
         let mut lines = Vec::new();
         
-        if pass_segments.is_empty() {
+        let total_passes = visible_passes.len() + if self.state.show_hidden { hidden_passes.len() } else { 0 };
+        if total_passes == 0 {
             lines.push(Line::raw(t!("predicted_passes.no_passes").to_string()));
         } else {
-            for (aos, los, max_el) in pass_segments {
+            // Add visible passes
+            for (aos, los, max_el) in visible_passes {
                 let aos_local = aos.with_timezone(&Local);
                 let los_local = los.with_timezone(&Local);
                 
+                let date_str = aos_local.format("%Y-%m-%d").to_string();
                 let aos_str = aos_local.format("%H:%M:%S").to_string();
                 let los_str = los_local.format("%H:%M:%S").to_string();
                 let duration = los - aos;
@@ -62,7 +98,7 @@ impl Widget for PredictedPasses<'_> {
                 
                 lines.push(Line::from(vec![
                     Span::styled(
-                        format!("AOS: {}", aos_str),
+                        format!("{} AOS: {}", date_str, aos_str),
                         Style::default().fg(Color::Green),
                     ),
                     Span::raw(" - "),
@@ -83,12 +119,52 @@ impl Widget for PredictedPasses<'_> {
                     Span::raw(")"),
                 ]));
             }
+
+            // Add hidden passes if toggle is on
+            if self.state.show_hidden {
+                for (aos, los, max_el) in hidden_passes {
+                    let aos_local = aos.with_timezone(&Local);
+                    let los_local = los.with_timezone(&Local);
+                    
+                    let date_str = aos_local.format("%Y-%m-%d").to_string();
+                    let aos_str = aos_local.format("%H:%M:%S").to_string();
+                    let los_str = los_local.format("%H:%M:%S").to_string();
+                    let duration = los - aos;
+                    let duration_str = format!("{}m", duration.num_minutes());
+                    let max_el_str = format!("{:.1}°", max_el);
+                    
+                    lines.push(Line::from(vec![
+                        Span::styled(
+                            format!("{} AOS: {}", date_str, aos_str),
+                            Style::default().fg(Color::Gray),
+                        ),
+                        Span::raw(" - "),
+                        Span::styled(
+                            format!("LOS: {}", los_str),
+                            Style::default().fg(Color::DarkGray),
+                        ),
+                        Span::raw(" ("),
+                        Span::styled(
+                            duration_str,
+                            Style::default().fg(Color::Gray),
+                        ),
+                        Span::raw(", Max: "),
+                        Span::styled(
+                            max_el_str,
+                            Style::default().fg(Color::Gray),
+                        ),
+                        Span::raw(")"),
+                    ]));
+                }
+            }
         }
 
         let content = format!(
-            "{} - {}",
+            "{} - {} (Min: {:.0}°{})",
             selected_object.name().unwrap_or("Unknown"),
-            ground_station.name
+            ground_station.name,
+            self.state.config.min_elevation_deg,
+            if self.state.show_hidden { " [H]" } else { "" }
         );
 
         let block = Block::bordered()
@@ -106,6 +182,20 @@ impl Widget for PredictedPasses<'_> {
         Paragraph::new(lines)
             .block(block)
             .render(popup_area, buf);
+    }
+}
+
+/// Handle events for the predicted passes widget.
+pub fn handle_event(event: Event, states: &mut crate::app::States) -> Result<()> {
+    match event {
+        Event::Key(key_event) => match key_event.code {
+            KeyCode::Char('h') => {
+                states.predicted_passes_state.show_hidden = !states.predicted_passes_state.show_hidden;
+                Ok(())
+            }
+            _ => Ok(()),
+        },
+        _ => Ok(()),
     }
 }
 
