@@ -46,10 +46,6 @@ lto = false          # Link-time optimization off for faster compiles
 panic = "unwind"     # Better panic messages
 incremental = true   # Faster rebuilds
 
-[profile.dev.package."*"]
-# Don't optimize dependencies in debug (faster compiles)
-opt-level = 0
-
 [profile.release]
 opt-level = 3        # Maximum optimizations
 debug = false        # No debug symbols
