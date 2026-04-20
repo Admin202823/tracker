@@ -56,18 +56,23 @@ impl Timeline<'_> {
 
     fn block(&self) -> Block<'static> {
         let current_time = self.shared.time.time();
+        let local_time = current_time.with_timezone(&Local);
+
         let block = Block::new()
             .borders(Borders::LEFT | Borders::RIGHT | Borders::BOTTOM)
             .title_bottom(
-                format!(
-                    "UTC: {} | Local: {} ({:+}m)",
-                    current_time.format("%Y-%m-%d %H:%M:%S"),
-                    current_time
-                        .with_timezone(&Local)
-                        .format("%Y-%m-%d %H:%M:%S"),
-                    self.shared.time.time_offset().num_minutes()
-                )
-                .white(),
+                Line::from(format!("Local: {}", local_time.format("%Y-%m-%d %H:%M:%S")))
+                    .white()
+            )
+            .title_bottom(
+                Line::from(format!("({:+}m)", self.shared.time.time_offset().num_minutes()))
+                    .white()
+                    .centered()
+            )
+            .title_bottom(
+                Line::from(format!("UTC: {}", current_time.format("%Y-%m-%d %H:%M:%S")))
+                    .white()
+                    .right_aligned()
             );
 
         block

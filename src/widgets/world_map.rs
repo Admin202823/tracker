@@ -43,6 +43,7 @@ pub struct WorldMapState {
     trajectory_color: Color,
     terminator_color: Color,
     visibility_area_color: Color,
+    predicted_passes_count: u32,
 
     /// The inner rendering area of the widget.
     inner_area: Rect,
@@ -61,6 +62,7 @@ impl WorldMapState {
             trajectory_color: config.trajectory_color,
             terminator_color: config.terminator_color,
             visibility_area_color: config.visibility_area_color,
+            predicted_passes_count: config.predicted_passes_count,
             ..Self::default()
         }
     }
@@ -225,7 +227,7 @@ impl WorldMap<'_> {
             // Draw the trajectory
             Self::draw_lines(
                 ctx,
-                calculate_ground_track(selected, &self.shared.time.time()),
+                calculate_ground_track(selected, &self.shared.time.time(), self.state.predicted_passes_count),
                 self.state.trajectory_color,
             );
 

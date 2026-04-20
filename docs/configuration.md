@@ -20,6 +20,7 @@ map_color = "gray"
 trajectory_color = "light_blue"
 terminator_color = "dark_gray"
 visibility_area_color = "yellow"
+predicted_passes_count = 1
 
 [satellite_groups]
 cache_lifetime_mins = 120
@@ -70,7 +71,13 @@ min_elevation_deg = 30.0
 - `follow_object`: Whether to automatically center the map on the selected satellite.
 - `follow_smoothing`: Smoothing factor for follow mode (0.0 = no movement, 1.0 = instant snap).
 - `show_terminator`: Whether to display the day-night terminator line.
+- `show_visibility_area`: Whether to display the visibility area for the selected satellite.
 - `lon_delta_deg`: Longitude offset in degrees when scrolling the map horizontally.
+- `map_color`: Color of the world map.
+- `trajectory_color`: Color of the satellite trajectory lines on the map.
+- `terminator_color`: Color of the day-night terminator line.
+- `visibility_area_color`: Color of the satellite visibility area.
+- `predicted_passes_count`: Number of orbital passes to display in the satellite trajectory on the map (default: 1).
 - `time_delta_mins`: Time step in minutes for time simulation controls.
 
 ## Satellite Groups

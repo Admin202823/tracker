@@ -104,9 +104,12 @@ pub fn calculate_terminator(time: &DateTime<Utc>) -> Vec<(f64, f64)> {
 }
 
 /// Calculates ground track points of the object.
-pub fn calculate_ground_track(object: &Object, time: &DateTime<Utc>) -> Vec<(f64, f64)> {
-    let mut points = Vec::with_capacity(object.orbital_period().num_minutes() as usize);
-    for duration in (1..object.orbital_period().num_minutes()).map(Duration::minutes) {
+pub fn calculate_ground_track(object: &Object, time: &DateTime<Utc>, passes_count: u32) -> Vec<(f64, f64)> {
+    let orbital_period = object.orbital_period();
+    let total_duration = orbital_period * passes_count as i32;
+    let mut points = Vec::with_capacity((total_duration.num_minutes() as usize).max(1));
+
+    for duration in (1..=total_duration.num_minutes()).map(Duration::minutes) {
         let state = object.predict(&(*time + duration)).unwrap();
         points.push((state.longitude(), state.latitude()));
     }

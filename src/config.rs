@@ -27,6 +27,7 @@ pub struct WorldMapConfig {
     pub trajectory_color: Color,
     pub terminator_color: Color,
     pub visibility_area_color: Color,
+    pub predicted_passes_count: u32,
 }
 
 impl Default for WorldMapConfig {
@@ -41,6 +42,7 @@ impl Default for WorldMapConfig {
             trajectory_color: Color::LightBlue,
             terminator_color: Color::DarkGray,
             visibility_area_color: Color::Yellow,
+            predicted_passes_count: 1,
         }
     }
 }

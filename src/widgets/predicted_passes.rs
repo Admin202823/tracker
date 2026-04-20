@@ -1,4 +1,4 @@
-use chrono::{Duration, Local};
+use chrono::{Duration, Local, Utc};
 use crossterm::event::KeyCode;
 use ratatui::{
     prelude::*,
@@ -53,12 +53,12 @@ impl Widget for PredictedPasses<'_> {
         let all_pass_segments = if let Some(cached) = self.shared.get_cached_passes() {
             cached
         } else {
-            // Get current simulation time (which accounts for user's timeline offset)
-            let current_time = self.shared.time.time();
+            // Get current local time for calculating future passes
+            let current_local_time = Local::now();
             
-            // Calculate passes for the next 24 hours from the current simulation time
-            let start_time = current_time;
-            let end_time = current_time + Duration::hours(24);
+            // Calculate passes for the next 24 hours from the current local time
+            let start_time = current_local_time.with_timezone(&Utc);
+            let end_time = start_time + Duration::hours(24);
 
             let calculated = calculate_pass_times(
                 selected_object,
