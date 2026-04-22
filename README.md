@@ -3,8 +3,7 @@
 A terminal-based real-time satellite tracking and orbit prediction application.
 
 <p align="center">
-    <img src="docs/screenshot_1.png" width="80%" alt="Screenshot"><br/>
-    <small><i>The font used in the screenshot is <a href="https://github.com/microsoft/cascadia-code">Cascadia Code NF</a>.</i></small>
+    <img src="docs/screenshot_1.png" width="75%" alt="Screenshot"><br/>
 </p>
 
 ## Features
@@ -23,27 +22,10 @@ A terminal-based real-time satellite tracking and orbit prediction application.
 
 ## Installation
 
-### Package manager
-
-#### Arch Linux
-
-`tracker` is available in the [AUR](https://aur.archlinux.org/packages/tracker/):
-
-```bash
-paru -S tracker # use your favorite AUR helper
-```
-
-#### Windows
-
-```powershell
-scoop bucket add extra
-scoop install tracker
-```
-
 ### Build from source
 
 ```bash
-cargo install --git https://github.com/ShenMian/tracker
+cargo install --git https://github.com/Admin202823/tracker
 ```
 
 ## Documentation
