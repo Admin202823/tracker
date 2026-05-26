@@ -3,7 +3,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::prelude::*;
 
 use crate::{
-    config::Config,
+    config::{Config, UiConfig},
     event::{Event, EventHandler},
     shared_state::SharedState,
     tui::Tui,
@@ -73,6 +73,7 @@ impl App {
             WorldMap {
                 state: &mut self.states.world_map_state,
                 shared: &self.states.shared,
+                ui: &self.states.ui,
             }
             .render(left_top_area, frame.buffer_mut());
 
@@ -90,11 +91,13 @@ impl App {
                 shared: &self.states.shared,
                 sky_state: &mut self.states.sky_state,
                 information_state: &mut self.states.information_state,
+                ui: &self.states.ui,
             }
             .render(right_top_area, frame.buffer_mut());
 
             SatelliteGroups {
                 state: &mut self.states.satellite_groups_state,
+                ui: &self.states.ui,
             }
             .render(right_bottom_area, frame.buffer_mut());
 
@@ -175,6 +178,7 @@ impl App {
 
 pub struct States {
     pub shared: SharedState,
+    pub ui: UiConfig,
     pub world_map_state: WorldMapState,
     pub satellite_groups_state: SatelliteGroupsState,
     pub tab_state: TabsState,
@@ -190,6 +194,7 @@ impl States {
     pub fn with_config(config: Config) -> Result<Self> {
         Ok(Self {
             shared: SharedState::with_config(config.clone()),
+            ui: config.ui.clone(),
             world_map_state: WorldMapState::with_config(config.world_map),
             satellite_groups_state: SatelliteGroupsState::with_config(config.satellite_groups)?,
             tab_state: Default::default(),

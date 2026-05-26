@@ -7,6 +7,7 @@ use rust_i18n::t;
 
 use crate::{
     app::States,
+    config::UiConfig,
     event::Event,
     shared_state::SharedState,
     widgets::{
@@ -57,6 +58,7 @@ pub struct Tabs<'a> {
     pub shared: &'a SharedState,
     pub sky_state: &'a mut SkyState,
     pub information_state: &'a mut InformationState,
+    pub ui: &'a UiConfig,
 }
 
 #[derive(Default)]
@@ -78,11 +80,15 @@ impl Tabs<'_> {
     fn block(&self) -> Block<'static> {
         let mut block = Block::bordered();
         for tab in Tab::iter() {
-            if tab == self.state.selected {
-                block = block.title(tab.to_string().blue());
+            let color = if tab == self.state.selected {
+                self.ui.tab_selected_color.0
             } else {
-                block = block.title(tab.to_string().gray());
-            }
+                self.ui.tab_unselected_color.0
+            };
+            block = block.title(Line::from(Span::styled(
+                tab.to_string(),
+                Style::default().fg(color),
+            )));
         }
         block
     }

@@ -3,7 +3,11 @@ use std::time::{Duration, Instant};
 use tokio::{sync::mpsc, task::AbortHandle};
 
 use crate::{
-    app::States, config::SatelliteGroupsConfig, event::Event, group::Group, object::Object,
+    app::States,
+    config::{UiConfig, SatelliteGroupsConfig},
+    event::Event,
+    group::Group,
+    object::Object,
     widgets::window_to_area,
 };
 use anyhow::Result;
@@ -19,6 +23,7 @@ use std::convert::TryFrom;
 /// A widget that displays a list of satellite groups.
 pub struct SatelliteGroups<'a> {
     pub state: &'a mut SatelliteGroupsState,
+    pub ui: &'a UiConfig,
 }
 
 /// State of a [`SatelliteGroups`] widget.
@@ -142,7 +147,7 @@ impl Default for SatelliteGroupsState {
 
 impl Widget for SatelliteGroups<'_> {
     fn render(mut self, area: Rect, buf: &mut Buffer) {
-        let block = Self::block();
+        let block = self.block();
         self.state.inner_area = block.inner(area);
         block.render(area, buf);
 
@@ -152,8 +157,11 @@ impl Widget for SatelliteGroups<'_> {
 }
 
 impl SatelliteGroups<'_> {
-    fn block() -> Block<'static> {
-        Block::bordered().title(t!("group.title").to_string().blue())
+    fn block(&self) -> Block<'static> {
+        Block::bordered().title(Line::from(Span::styled(
+            t!("group.title").to_string(),
+            Style::default().fg(self.ui.panel_title_color.0),
+        )))
     }
 
     fn list(&self) -> List<'static> {

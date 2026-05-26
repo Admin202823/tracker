@@ -10,6 +10,11 @@ Default configuration file locations on different platforms:
 ## Default Settings
 
 ```toml
+[ui]
+panel_title_color = "white"
+tab_selected_color = "white"
+tab_unselected_color = "gray"
+
 [world_map]
 follow_object = true
 follow_smoothing = 0.3
@@ -66,6 +71,12 @@ min_elevation_deg = 30.0
 
 - `min_elevation_deg`: Minimum peak elevation in degrees for passes shown by default in the predicted passes popup. Passes below this threshold are hidden unless the user presses `h` while the popup is open.
 
+## UI
+
+- `panel_title_color`: Color used for panel titles such as `Carte du monde` and `Groupes de satellites`.
+- `tab_selected_color`: Color used for the currently selected tab label (`infos` or `ciel`).
+- `tab_unselected_color`: Color used for other tab labels.
+
 ## World Map
 
 - `follow_object`: Whether to automatically center the map on the selected satellite.
@@ -112,3 +123,30 @@ Available colors:
 - `light_magenta`.
 - `light_cyan`.
 - `white`.
+
+Additional aliases also supported:
+
+- `orange`.
+- `pink`.
+- `purple`.
+- `teal`.
+- `brown`.
+- `navy`.
+- `lime`.
+- `olive`.
+- `maroon`.
+- `aqua`.
+
+Custom RGB colors are supported too, using HTML-style hex codes like `#FFA500`.
+For example:
+
+```toml
+[ui]
+panel_title_color = "orange"
+tab_selected_color = "#FFA500"
+tab_unselected_color = "gray"
+
+[world_map]
+map_color = "#003366"
+trajectory_color = "#FF9900"
+```

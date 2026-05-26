@@ -11,7 +11,11 @@ use ratatui::{
 use rust_i18n::t;
 
 use crate::{
-    app::States, config::WorldMapConfig, event::Event, shared_state::SharedState, utils::*,
+    app::States,
+    config::{UiConfig, WorldMapConfig},
+    event::Event,
+    shared_state::SharedState,
+    utils::*,
     widgets::window_to_area,
 };
 
@@ -19,6 +23,7 @@ use crate::{
 pub struct WorldMap<'a> {
     pub state: &'a mut WorldMapState,
     pub shared: &'a SharedState,
+    pub ui: &'a UiConfig,
 }
 
 /// State of a [`WorldMap`] widget.
@@ -58,10 +63,10 @@ impl WorldMapState {
             show_terminator: config.show_terminator,
             show_visibility_area: config.show_visibility_area,
             lon_delta: config.lon_delta_deg,
-            map_color: config.map_color,
-            trajectory_color: config.trajectory_color,
-            terminator_color: config.terminator_color,
-            visibility_area_color: config.visibility_area_color,
+            map_color: config.map_color.0,
+            trajectory_color: config.trajectory_color.0,
+            terminator_color: config.terminator_color.0,
+            visibility_area_color: config.visibility_area_color.0,
             predicted_passes_count: config.predicted_passes_count,
             ..Self::default()
         }
@@ -98,7 +103,10 @@ impl WorldMap<'_> {
                 bottom_right: symbols::line::VERTICAL_LEFT,
                 ..Default::default()
             })
-            .title(t!("map.title").to_string().blue());
+            .title(Line::from(Span::styled(
+                t!("map.title").to_string(),
+                Style::default().fg(self.ui.panel_title_color.0),
+            )));
 
         // Show follow mode indicator if enabled
         if self.state.follow_object {

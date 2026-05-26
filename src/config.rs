@@ -1,17 +1,99 @@
 use ratatui::style::Color;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
+use std::str::FromStr;
 
 use crate::coordinates::Lla;
+
+/// Wrapper for configurable colors in TOML.
+///
+/// Supports regular ANSI color names, common aliases, and RGB hex codes like
+/// `#FFA500`.
+#[derive(Clone, Copy, Debug)]
+pub struct ConfigColor(pub Color);
+
+impl Default for ConfigColor {
+    fn default() -> Self {
+        Self(Color::White)
+    }
+}
+
+impl<'de> Deserialize<'de> for ConfigColor {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let input = String::deserialize(deserializer)?;
+        let normalized = input.to_lowercase();
+
+        if let Ok(color) = Color::from_str(&normalized) {
+            return Ok(Self(color));
+        }
+
+        if let Some(color) = parse_color_alias(&normalized) {
+            return Ok(Self(color));
+        }
+
+        Err(serde::de::Error::custom(format!("Invalid color: {input}")))
+    }
+}
+
+impl From<ConfigColor> for Color {
+    fn from(config_color: ConfigColor) -> Self {
+        config_color.0
+    }
+}
+
+fn parse_color_alias(input: &str) -> Option<Color> {
+    match input
+        .replace([' ', '-', '_'], "")
+        .replace("bright", "light")
+        .replace("grey", "gray")
+        .replace("silver", "gray")
+        .as_str()
+    {
+        "orange" => Some(Color::Rgb(255, 165, 0)),
+        "pink" => Some(Color::Rgb(255, 192, 203)),
+        "purple" => Some(Color::Rgb(128, 0, 128)),
+        "teal" => Some(Color::Rgb(0, 128, 128)),
+        "brown" => Some(Color::Rgb(165, 42, 42)),
+        "navy" => Some(Color::Rgb(0, 0, 128)),
+        "lime" => Some(Color::Rgb(0, 255, 0)),
+        "olive" => Some(Color::Rgb(128, 128, 0)),
+        "maroon" => Some(Color::Rgb(128, 0, 0)),
+        "aqua" => Some(Color::Rgb(0, 255, 255)),
+        _ => None,
+    }
+}
 
 /// Configuration for the application.
 #[derive(Clone, Default, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
+    pub ui: UiConfig,
     pub world_map: WorldMapConfig,
     pub satellite_groups: SatelliteGroupsConfig,
     pub sky: SkyConfig,
     pub timeline: TimelineConfig,
     pub predicted_passes: PredictedPassesConfig,
+}
+
+/// Configuration for application UI colors.
+#[derive(Clone, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct UiConfig {
+    pub panel_title_color: ConfigColor,
+    pub tab_selected_color: ConfigColor,
+    pub tab_unselected_color: ConfigColor,
+}
+
+impl Default for UiConfig {
+    fn default() -> Self {
+        Self {
+            panel_title_color: ConfigColor(Color::White),
+            tab_selected_color: ConfigColor(Color::White),
+            tab_unselected_color: ConfigColor(Color::Gray),
+        }
+    }
 }
 
 /// Configuration for the world map widget.
@@ -23,10 +105,10 @@ pub struct WorldMapConfig {
     pub show_terminator: bool,
     pub show_visibility_area: bool,
     pub lon_delta_deg: f64,
-    pub map_color: Color,
-    pub trajectory_color: Color,
-    pub terminator_color: Color,
-    pub visibility_area_color: Color,
+    pub map_color: ConfigColor,
+    pub trajectory_color: ConfigColor,
+    pub terminator_color: ConfigColor,
+    pub visibility_area_color: ConfigColor,
     pub predicted_passes_count: u32,
 }
 
@@ -38,10 +120,10 @@ impl Default for WorldMapConfig {
             show_terminator: true,
             show_visibility_area: false, // Disabled by default for better debug performance
             lon_delta_deg: 10.0,
-            map_color: Color::Gray,
-            trajectory_color: Color::LightBlue,
-            terminator_color: Color::DarkGray,
-            visibility_area_color: Color::Yellow,
+            map_color: ConfigColor(Color::Gray),
+            trajectory_color: ConfigColor(Color::LightBlue),
+            terminator_color: ConfigColor(Color::DarkGray),
+            visibility_area_color: ConfigColor(Color::Yellow),
             predicted_passes_count: 1,
         }
     }
