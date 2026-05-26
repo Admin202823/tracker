@@ -7,7 +7,7 @@ use ratatui::{
 use rust_i18n::t;
 use anyhow::Result;
 
-use crate::{config::PredictedPassesConfig, event::Event, shared_state::SharedState, utils::calculate_pass_times};
+use crate::{config::{PredictedPassesConfig, UiConfig}, event::Event, shared_state::SharedState, utils::calculate_pass_times};
 
 /// State for the predicted passes widget.
 #[derive(Clone)]
@@ -38,6 +38,7 @@ impl PredictedPassesState {
 pub struct PredictedPasses<'a> {
     pub shared: &'a SharedState,
     pub state: &'a PredictedPassesState,
+    pub ui: &'a UiConfig,
 }
 
 impl Widget for PredictedPasses<'_> {
@@ -135,8 +136,10 @@ impl Widget for PredictedPasses<'_> {
             if self.state.show_hidden { " [H]" } else { "" }
         );
 
-        let block = Block::bordered()
-            .title(content.blue());
+        let block = Block::bordered().title(Line::from(Span::styled(
+            content,
+            Style::default().fg(self.ui.popup_title_color.0),
+        )));
 
         let inner_width = 70_u16;
         let inner_height = (lines.len() as u16 + 1).max(5);

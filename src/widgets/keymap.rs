@@ -1,9 +1,11 @@
 use ratatui::{
     prelude::*,
+    style::Style,
     widgets::{Block, Clear, Paragraph},
 };
 use rust_i18n::t;
 use unicode_width::UnicodeWidthStr;
+use crate::config::UiConfig;
 
 // Global
 const GLOBAL_BINDINGS: &[(&str, &str)] = &[
@@ -37,15 +39,20 @@ const SECTIONS: &[(&str, &[(&str, &str)])] = &[
     ("keymap.timeline", TIMELINE_BINDINGS),
 ];
 
-pub struct Keymap;
+pub struct Keymap<'a> {
+    pub ui: &'a UiConfig,
+}
 
-impl Keymap {
-    fn block() -> Block<'static> {
-        Block::bordered().title(t!("keymap.title").to_string().blue())
+impl Keymap<'_> {
+    fn block(&self) -> Block<'static> {
+        Block::bordered().title(Line::from(Span::styled(
+            t!("keymap.title").to_string(),
+            Style::default().fg(self.ui.popup_title_color.0),
+        )))
     }
 }
 
-impl Widget for Keymap {
+impl Widget for Keymap<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         // Translate section names and descriptions
         let sections: Vec<_> = SECTIONS
@@ -105,7 +112,7 @@ impl Widget for Keymap {
 
         Clear.render(popup_area, buf);
         Paragraph::new(lines)
-            .block(Self::block())
+            .block(self.block())
             .render(popup_area, buf);
     }
 }

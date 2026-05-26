@@ -102,13 +102,14 @@ impl App {
             .render(right_bottom_area, frame.buffer_mut());
 
             if self.states.show_keymap {
-                Keymap.render(frame.area(), frame.buffer_mut());
+                Keymap { ui: &self.states.ui }.render(frame.area(), frame.buffer_mut());
             }
 
             if self.states.show_predicted_passes {
                 PredictedPasses {
                     shared: &self.states.shared,
                     state: &self.states.predicted_passes_state,
+                    ui: &self.states.ui,
                 }
                 .render(frame.area(), frame.buffer_mut());
             }

@@ -12,6 +12,7 @@ Default configuration file locations on different platforms:
 ```toml
 [ui]
 panel_title_color = "white"
+popup_title_color = "white"
 tab_selected_color = "white"
 tab_unselected_color = "gray"
 
@@ -76,6 +77,17 @@ min_elevation_deg = 30.0
 - `panel_title_color`: Color used for panel titles such as `Carte du monde` and `Groupes de satellites`.
 - `tab_selected_color`: Color used for the currently selected tab label (`infos` or `ciel`).
 - `tab_unselected_color`: Color used for other tab labels.
+ - `popup_title_color`: Color used for the titles of pop-up windows (keymap, predicted passes, etc.).
+
+Example:
+
+```toml
+[ui]
+panel_title_color = "white"
+popup_title_color = "#FFA500" # orange title for popups
+tab_selected_color = "white"
+tab_unselected_color = "gray"
+```
 
 ## World Map
 
@@ -143,6 +155,7 @@ For example:
 ```toml
 [ui]
 panel_title_color = "orange"
+popup_title_color = "#FFA500"
 tab_selected_color = "#FFA500"
 tab_unselected_color = "gray"
 

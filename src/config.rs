@@ -82,6 +82,7 @@ pub struct Config {
 #[serde(default, deny_unknown_fields)]
 pub struct UiConfig {
     pub panel_title_color: ConfigColor,
+    pub popup_title_color: ConfigColor,
     pub tab_selected_color: ConfigColor,
     pub tab_unselected_color: ConfigColor,
 }
@@ -90,6 +91,7 @@ impl Default for UiConfig {
     fn default() -> Self {
         Self {
             panel_title_color: ConfigColor(Color::White),
+            popup_title_color: ConfigColor(Color::White),
             tab_selected_color: ConfigColor(Color::White),
             tab_unselected_color: ConfigColor(Color::Gray),
         }
